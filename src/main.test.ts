@@ -5,7 +5,7 @@ import http from './main.ts';
 (async () => {
   
   type Assert<V extends true> = V;
-  type Equal<A, B> = A extends B ? B extends A ? true : false : false;
+  type Equal<A, B> = [A] extends [B] ? [B] extends [A] ? true : false : false;
   
   type Tests = {
     1: Assert<Equal<{ x: 'y' }, { x: 'y' }>>
