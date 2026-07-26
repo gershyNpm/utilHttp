@@ -2,43 +2,25 @@ import '@gershy/clearing';
 
 export type NetProc = { proto: 'ws' | 'wss' | 'http' | 'https', addr: string, port: number };
 
-type Built<T> = T | { [k: string]: Built<T> };
-export type HttpReq = {
-  
-  // Defines an http request, but is agnostic of the NetProc (no proto, addr, etc. included)
-  
-  path:    string[],
-  method:  'head' | 'get' | 'post' | 'put' | 'patch' | 'delete' | 'sokt',
-  // headers: Obs<string[]>, // Currently considering not exposing headers - just "cookies", parsed separately...
-  cookies: Obj<Built<string>>,
-  query?:  Obj<Built<string>>, // Consider eliminating arrays; user could do "?args.0=a&args.1=b&args.2=c" -> { args: { 0: 'a', 1: 'b', 2: 'c' } }
-  body?:   Json
-  
-};
-export type HttpRes = {
-  code: number,
-  headers?: { [key: string]: string | string[] },
-  body: Json | Uint8Array
-};
-export type HttpArgs<Req extends HttpReq, Res extends HttpRes> = {}
-  & { fetch?: typeof fetch }
-  & { $req: Req, $res: Res }
-  & { netProc: NetProc }
-  & Omit<Req, 'cookies' | 'query' | 'body'> // We omit the "cookies" arg as it's provided automatically/statefully by `fetch` (not explicitly by the consumer)
-  & { headers?: Obj<string> };
-export type HttpResult<Res extends HttpRes> = {
-  reqArgs: { url: string, method: string, headers: [string, string][], body: string | null }
-  code: number,
-  body: Res['body']
-};
-export type HttpRet<Res extends HttpRes> = Promise<HttpResult<Res>> & { end: () => void };
+type Built<T> = T | { [K: string]: Built<T> };
 
-export default <Req extends HttpReq, Res extends HttpRes>(args: HttpArgs<Req, Res>, params: Pick<Req, 'query' | 'body'>) => {
+export type HttpMethod = 'head' | 'get' | 'post' | 'put' | 'patch' | 'delete';
+export type HttpInp = {
+  fetch?: typeof fetch,
+  netProc: NetProc,
+  path: string[],
+  method: HttpMethod,
+  headers?: Obj<string>,
+  cookies?: Obj<Built<string>>,
+  query?: Obj<Built<string>>,
+  body?: Json // Want to add `| Uint8Array` but HttpCaller has an arbitrary `httpInp` member prop which it wants to be able to jsfn encode... add Uint8Array handling to jsfn??
+};
+export default <ResBody>(inp: HttpInp) => {
   
   // Note this function is sovereign - can't reference jargon/http for `formatNetProc` :(
-  const { fetch: fetcher = fetch } = args;
-  const { netProc, path, headers={} } = args;
-  const { query = {}, body: reqBody = null } = params;
+  const { fetch: fetcher = fetch } = inp;
+  const { netProc, path, headers={} } = inp;
+  const { query = {}, body: reqBody = null } = inp;
   
   const defPorts = { http: 80, https: 443 };
   const url = [
@@ -72,7 +54,7 @@ export default <Req extends HttpReq, Res extends HttpRes>(args: HttpArgs<Req, Re
   ].filter(Boolean).join('');
   
   const reqArgs = {
-    method: args.method[cl.upper](),
+    method: inp.method[cl.upper](),
     headers: headers
       [cl.toArr]((v, k) => [ k.replace(/([A-Z])/g, '-$1')[cl.lower](), v ] as [ string, string ]), // Avoid `camelCase` util - want to keep this sovereign
     body: [ Object, Array ].some(C => cl.isCls(reqBody, C)) ? JSON.stringify(reqBody) : reqBody !== null ? `${reqBody}` : null
@@ -92,7 +74,7 @@ export default <Req extends HttpReq, Res extends HttpRes>(args: HttpArgs<Req, Re
       const http = {
         reqArgs: Object.assign(reqArgs, { url, body: reqBody }) as (typeof reqArgs & { url: string }),
         code: res.status,
-        body: resBody as Res['body']
+        body: resBody as ResBody
       };
       
       if (res.status >= 500) throw Error('http glitch')[cl.mod](http);

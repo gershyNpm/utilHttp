@@ -5,7 +5,6 @@ import http from './main.ts';
 (async () => {
   
   type Assert<V extends true> = V;
-  type Equal<A, B> = [A] extends [B] ? [B] extends [A] ? true : false : false;
   
   type Tests = {
     1: Assert<Equal<{ x: 'y' }, { x: 'y' }>>
@@ -26,16 +25,12 @@ testRunner([
     const result = await http({
       
       fetch: mockFetcher(200, { x: 'x', y: 'y', z: 'z' }),
-      
-      $req: null as any as { path: any, method: any, cookies: any, query: { a: string }, body: { b: string } },
-      $res: null as any as { code: any, body: { x: string, y: string, z: string } },
       netProc: { proto: 'http', addr: 'test.com', port: 80 },
       path: [ 'a', 'b', 'c' ],
-      method: 'get'
-      
-    }, {
+      method: 'get',
       query: { a: 'a' },
       body: { b: 'b' }
+      
     });
     
     assertEqual(result, {
