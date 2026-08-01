@@ -1,6 +1,6 @@
 {
   "name": "@gershy/util-http",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "author": "Gershom Maes",
   "description": "TODO",
   "keywords": [
@@ -8,19 +8,19 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gershy/utilHttp.git"
+    "url": "git+https://github.com/gershyNpm/utilHttp.git"
   },
   "bugs": {
-    "url": "https://github.com/gershy/utilHttp/issues"
+    "url": "https://github.com/gershyNpm/utilHttp/issues"
   },
-  "homepage": "https://github.com/gershy/utilHttp#readme",
+  "homepage": "https://github.com/gershyNpm/utilHttp#readme",
   "type": "module",
   "files": [
     "cmp"
   ],
   "license": "ISC",
   "peerDependencies": {
-    "@gershy/clearing": "^0.0.51"
+    "@gershy/clearing": "^0.0.52"
   },
   "devDependencies": {
     "@types/node": "^24.10.1"
