@@ -13,7 +13,7 @@ export type HttpInp = {
   headers?: Obj<string>,
   cookies?: Obj<Built<string>>,
   query?: Obj<Built<string>>,
-  body?: Json // Want to add `| Uint8Array` but HttpCaller has an arbitrary `httpInp` member prop which it wants to be able to jsfn encode... add Uint8Array handling to jsfn??
+  body?: Json // Want to add `| Uint8Array` but HttpPollen has an arbitrary `httpInp` member prop which it wants to be able to jsfn encode... add Uint8Array handling to jsfn??
 };
 export default <ResBody>(inp: HttpInp) => {
   
